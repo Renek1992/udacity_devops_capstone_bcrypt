@@ -1,12 +1,19 @@
 # CircleCI configuration
 version: 2.1
 
+# Slack notification orb
+orbs:
+  slack: circleci/slack@4.4.2
 
 commands:
 
 
 
 jobs:
+  lint-docker:
+
+  build-docker:
+
 
 
 

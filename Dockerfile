@@ -8,4 +8,4 @@ COPY app/ /app/
 RUN npm ci && \
     npm run build
 
-CMD ["/bin/bash", "-c", "npm run serve"]
+CMD ["npm", "run", "serve"]
