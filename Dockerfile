@@ -6,6 +6,7 @@ WORKDIR /app
 COPY app/ /app/
 
 RUN npm ci && \
+    npm audit fix && \
     npm run build
 
 CMD ["npm", "run", "serve"]

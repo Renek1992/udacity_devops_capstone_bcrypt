@@ -11,29 +11,66 @@ orbs:
 
 # Circleci jobs
 jobs:
+  app-build:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: build application
+          command: |
+            cd app
+            npm install 
+            npm run build
+      - save_cache:
+          paths: [app/node_modules]
+          key: app-build
+
+
   lint-check:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - restore_cache:
+          keys: [app-build]
       - run:
           name: lint dockerfile using hadolint
           command: |
             sudo wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.5.0/hadolint-Linux-x86_64
             sudo chmod +x /bin/hadolint
             hadolint Dockerfile
-
       - run:
           name: lint app using npm
           command: |
             cd app
             npm install
             npm run lint
+      - save_cache:
+          paths: [app/node_modules]
+          key: app-build
 
-  # volnubility-check:
-  #   docker:
-  #     - image: circleci/node:13.8.0
-  #   steps:
+
+  vulnerability-check:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys [app-build]
+      - run:
+          name: vulnerability check on node packages
+          command: |
+            cd app
+            npm install
+            npm audit fix
+      - save-cache:
+          paths: [app/modules]
+          key: app-build
+
+
+      
+
 
 
  
@@ -53,4 +90,8 @@ jobs:
 workflows:
   default:
     jobs:
-      - lint-check
+      - app-build
+      - lint-check:
+          requires: [app-build]
+      - vulnerability-check:
+          requires: [app-build]
