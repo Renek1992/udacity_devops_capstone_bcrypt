@@ -57,7 +57,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys [app-build]
+          keys: [app-build]
       - run:
           name: vulnerability check on node packages
           command: |
@@ -94,4 +94,4 @@ workflows:
       - lint-check:
           requires: [app-build]
       - vulnerability-check:
-          requires: [lint-check]
+          requires: [app-build]
