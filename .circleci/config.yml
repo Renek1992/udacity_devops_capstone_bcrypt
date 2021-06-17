@@ -21,7 +21,6 @@ jobs:
           command: |
             wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.5.0/hadolint-Linux-x86_64
             sudo chmod +x /bin/hadolint
-            hadolint --version
             hadolint Dockerfile
       - run:
           name: lint app using npm
