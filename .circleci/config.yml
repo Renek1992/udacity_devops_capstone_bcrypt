@@ -64,7 +64,7 @@ jobs:
             cd app
             npm install
             npm audit fix
-      - save-cache:
+      - save_cache:
           paths: [app/modules]
           key: app-build
 
