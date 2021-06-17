@@ -5,18 +5,50 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.4.2
 
-commands:
+# # CircleCi commands
+# commands:
 
 
-
+# Circleci jobs
 jobs:
-  lint-docker:
+  lint-check:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: lint dockerfile using hadolint
+          command: |
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.5.0/hadolint-Linux-x86_64
+            hadolint --version
+            hadolint Dockerfile
+      - run:
+          name: lint app using npm
+          command: |
+            cd app
+            npm run lint
 
-  build-docker:
+  # volnubility-check:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+
+
+ 
+  # build-docker:
 
 
 
+  # push-docker:
 
-workflows:
+
+
+  # deploy-infrastructure:
+
+
+  
+# Circleci workflow
+workflow:
   default:
     jobs:
+      - lint-check
