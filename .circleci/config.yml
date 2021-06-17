@@ -48,7 +48,7 @@ jobs:
 
   
 # Circleci workflow
-workflow:
+workflows:
   default:
     jobs:
       - lint-check
