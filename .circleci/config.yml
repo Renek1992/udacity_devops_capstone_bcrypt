@@ -94,4 +94,4 @@ workflows:
       - lint-check:
           requires: [app-build]
       - vulnerability-check:
-          requires: [app-build]
+          requires: [lint-check]
