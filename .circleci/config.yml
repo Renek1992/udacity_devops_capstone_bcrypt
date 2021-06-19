@@ -8,10 +8,23 @@ orbs:
 
 # # CircleCi commands
 # commands:
-
+#   ecr-destroy:
+#     description: destroy 
+#     steps:
 
 # Circleci jobs
 jobs:
+  workflow-start:
+    docker: 
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Workflow start command
+          command: |
+            echo "Start worflow..."
+            $WORKFLOWSTART="date -Is"
+
   app-build:
     docker:
       - image: circleci/node:13.8.0
@@ -40,7 +53,15 @@ jobs:
           command: |
             sudo wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.5.0/hadolint-Linux-x86_64
             sudo chmod +x /bin/hadolint
-            hadolint Dockerfile
+            hadolint ./Dockerfile | tee -a hadolint_lint.txt
+            lintErrors=$(stat --printf="%s"  hadolint_lint.txt)
+            if [ "$lintErrors" -gt "0" ]; then
+                echo "Errors have been found, please see below"
+                cat hadolint_lint.txt
+                exit 1
+            else
+                echo "There are no erros found on Dockerfile"
+            fi
       - run:
           name: lint app using npm
           command: |
@@ -68,29 +89,36 @@ jobs:
       - save_cache:
           paths: [app/modules]
           key: app-build
-  
 
-  # docker-push:
-  #   docker: 
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: docker install
-  #         command: |
-  #           yum update -y 
-  #           amazon-linux-extras install docker -y
-  #           systemctl start docker
-  #           docker --version
-  #     - run:
-  #         name: docker image push to ECR
-  #         command: |
-  #           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 669700445040.dkr.ecr.us-east-1.amazonaws.com
-  #           ./run_docker.sh
-  #           docker tag udacity-capstone-bcrypt:latest 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
-  #           docker push 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
 
-      
+  infrastructure-deploy:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: infrastructure handling for AWS ECR repository
+          command: |
+            aws cloudformation describe-stacks --stack-name bcrypt-ecr-repo > output.txt
+            if grep -q "error" output.txt
+            then
+              echo "stack doesn't exist"
+              return 1
+            else
+              echo "stack already exists"
+              return 1
+            fi
+
+
+  image-check:
+    docker: 
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: ecr image check
+          command: |
+            aws ecr describe-images --repository-name udacity-capstone-bcrypt
 
 
 
@@ -116,6 +144,8 @@ workflows:
           requires: [app-build]
       - vulnerability-check:
           requires: [app-build]
+      - infrastructure-deploy:
+          requires: [lint-check, vulnerability-check]
       - aws-ecr/build-and-push-image:
           repo: udacity-capstone-bcrypt
-          requires: [lint-check, vulnerability-check]
+          requires: [infrastructure-deploy]
