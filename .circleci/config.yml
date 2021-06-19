@@ -103,6 +103,7 @@ jobs:
             then
               echo "stack already exists"
             else
+              echo "stack needs to be created"
               ./create_ecr_infra.sh
             fi
 
@@ -123,7 +124,6 @@ jobs:
               echo "docker image missing in AWS ECR repository"
               exit 1
             fi
-
 
   
 # Circleci workflow
