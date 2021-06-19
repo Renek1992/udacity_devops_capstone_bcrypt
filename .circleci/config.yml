@@ -104,7 +104,9 @@ jobs:
               echo "stack already exists"
             else
               echo "stack needs to be created"
-              ./create_ecr_infra.sh
+              aws cloudformation deploy \
+                            --template-file ./infrastructure/aws_cf_ecr.yaml \
+                            --stack-name bcrypt-ecr-repo
             fi
 
 
