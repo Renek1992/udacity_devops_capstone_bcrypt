@@ -102,11 +102,13 @@ jobs:
             if aws cloudformation describe-stacks --stack-name bcrypt-ecr-repo
             then
               echo "stack already exists"
+              exit 0
             else
               echo "stack needs to be created"
               aws cloudformation deploy \
                             --template-file ./infrastructure/aws_cf_ecr.yaml \
                             --stack-name bcrypt-ecr-repo
+              exit 0
             fi
 
 
