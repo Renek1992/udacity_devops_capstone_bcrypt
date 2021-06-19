@@ -4,6 +4,7 @@ version: 2.1
 # Slack notification orb
 orbs:
   slack: circleci/slack@4.4.2
+  aws-ecr: circleci/aws-ecr@7.0.0
 
 # # CircleCi commands
 # commands:
@@ -69,25 +70,25 @@ jobs:
           key: app-build
   
 
-  docker-push:
-    docker: 
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: docker install
-          command: |
-            yum update -y 
-            amazon-linux-extras install docker -y
-            systemctl start docker
-            docker --version
-      - run:
-          name: docker image push to ECR
-          command: |
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 669700445040.dkr.ecr.us-east-1.amazonaws.com
-            ./run_docker.sh
-            docker tag udacity-capstone-bcrypt:latest 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
-            docker push 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
+  # docker-push:
+  #   docker: 
+  #     - image: amazon/aws-cli
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: docker install
+  #         command: |
+  #           yum update -y 
+  #           amazon-linux-extras install docker -y
+  #           systemctl start docker
+  #           docker --version
+  #     - run:
+  #         name: docker image push to ECR
+  #         command: |
+  #           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 669700445040.dkr.ecr.us-east-1.amazonaws.com
+  #           ./run_docker.sh
+  #           docker tag udacity-capstone-bcrypt:latest 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
+  #           docker push 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
 
       
 
@@ -115,5 +116,6 @@ workflows:
           requires: [app-build]
       - vulnerability-check:
           requires: [app-build]
-      - docker-push:
+      - aws-ecr/build-and-push-image:
+          repo: udacity-capstone-bcrypt
           requires: [lint-check, vulnerability-check]
