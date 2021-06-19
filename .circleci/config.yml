@@ -79,6 +79,7 @@ jobs:
           command: |
             yum update -y 
             amazon-linux-extras install docker -y
+            systemctl start docker
             docker --version
       - run:
           name: docker image push to ECR
