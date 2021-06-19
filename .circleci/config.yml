@@ -67,7 +67,20 @@ jobs:
       - save_cache:
           paths: [app/modules]
           key: app-build
+  
 
+  docker-push:
+    docker: 
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: 
+          command: |
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 669700445040.dkr.ecr.us-east-1.amazonaws.com
+            ./run_docker.sh
+            docker tag udacity-capstone-bcrypt:latest 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
+            docker push 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
 
       
 
@@ -95,3 +108,5 @@ workflows:
           requires: [app-build]
       - vulnerability-check:
           requires: [app-build]
+      - docker-push:
+          requires: [lint-check, vulnerability-check]
