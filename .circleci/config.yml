@@ -102,10 +102,8 @@ jobs:
             if aws cloudformation describe-stacks --stack-name bcrypt-ecr-repo
             then
               echo "stack already exists"
-              return 1
             else
-              echo "stack doesn't exist"
-              return 1
+              ./create_ecr_infra.sh
             fi
 
 
@@ -117,20 +115,14 @@ jobs:
       - run:
           name: ecr image check
           command: |
-            aws ecr describe-images --repository-name udacity-capstone-bcrypt
-
-
-
- 
-  # build-docker:
-
-
-
-  # push-docker:
-
-
-
-  # deploy-infrastructure:
+            if aws ecr describe-images --repository-name udacity-capstone-bcrypt
+            then 
+              echo "docker image available in AWS ECR repository"
+              exit 0
+            else
+              echo "docker image missing in AWS ECR repository"
+              exit 1
+            fi
 
 
   
@@ -148,3 +140,5 @@ workflows:
       - aws-ecr/build-and-push-image:
           repo: udacity-capstone-bcrypt
           requires: [infrastructure-deploy]
+      - image-check:
+          requires: [aws-ecr/build-and-push-image]
