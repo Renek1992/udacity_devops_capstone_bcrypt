@@ -99,13 +99,12 @@ jobs:
       - run:
           name: infrastructure handling for AWS ECR repository
           command: |
-            aws cloudformation describe-stacks --stack-name bcrypt-ecr-repo > output.txt
-            if grep -q "error" output.txt
+            if aws cloudformation describe-stacks --stack-name bcrypt-ecr-repo
             then
-              echo "stack doesn't exist"
+              echo "stack already exists"
               return 1
             else
-              echo "stack already exists"
+              echo "stack doesn't exist"
               return 1
             fi
 
