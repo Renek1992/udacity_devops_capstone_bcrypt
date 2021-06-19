@@ -75,7 +75,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: 
+          name: docker install
+          command: |
+            sudo yum update -y
+            sudo amazon-linux-extras install docker
+            sudo service docker start
+
+      - run:
+          name: docker image push to ECR
           command: |
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 669700445040.dkr.ecr.us-east-1.amazonaws.com
             ./run_docker.sh
