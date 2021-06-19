@@ -77,10 +77,9 @@ jobs:
       - run:
           name: docker install
           command: |
-            yum update -y
-            amazon-linux-extras install docker
+            yum update -y 
+            amazon-linux-extras install docker -y
             service docker start
-
       - run:
           name: docker image push to ECR
           command: |
