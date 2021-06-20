@@ -175,6 +175,14 @@ jobs:
             mv /tmp/eksctl /usr/local/bin
             eksctl --help
       - run:
+          name: Install of dependencies for cluster and workers setup - kubectl
+          command: |
+            curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+            echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+            kubectl version --short --client
+      - run:
           name: Create cluster and worker nodes
           command: |
             eksctl create cluster -f ./infrastructure/aws_ekctl_cluster.yaml
