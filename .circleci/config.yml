@@ -177,7 +177,7 @@ jobs:
       - run:
           name: Create cluster and worker nodes
           command: |
-            eksctl create cluster -f cluster.yaml
+            eksctl create cluster -f ./infrastructure/aws_ekctl_cluster.yaml
             kubectl get svc
 
 
