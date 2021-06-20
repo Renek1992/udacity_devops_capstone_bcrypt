@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-bcrypt
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bcrypt-app
+  template:
+    metadata:
+      labels:
+        app: bcrypt-app
+    spec:
+      containers:
+        - name: udacity-capstone-bcrypt
+          image: 669700445040.dkr.ecr.us-east-1.amazonaws.com/udacity-capstone-bcrypt:latest
+          ports:
+            - containerPort: 9080

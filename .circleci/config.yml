@@ -149,7 +149,7 @@ jobs:
             aws ecr describe-images --repository-name udacity-capstone-bcrypt
 
   
-  eks-infra-deploy:
+  eks-deploy:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -177,8 +177,27 @@ jobs:
       - run:
           name: Create cluster and worker nodes
           command: |
-            eksctl create cluster -f ./infrastructure/aws_ekctl_cluster.yaml
+            eksctl create cluster -f ./infrastructure/aws_ekctl_cluster.yaml --version 1.16
             kubectl get svc
+      - run:
+          name: Update kubectl config 
+          command: |
+            aws eks --region us-east-1 update-kubeconfig --name EKS-bcrypt-cluster
+      - run:
+          name: Apply kubectl deploy manifest
+          command: |
+            kubectl apply -f ./manifest/aws_ekctl_deploy_manifest.yaml
+            kubectl get deployments
+      - run:
+          name: Apply kubectl service manifest
+          command: |
+            kubectl apply -f ./manifest/aws_ekctl_service_manifest.yaml
+            kubectl get services
+      - run:
+          name: Check kubernetes configuration
+          command: |
+            kubectl get pods -o wide
+            kubectl get nodes -o wide
 
 
 # Circleci workflow
@@ -199,5 +218,5 @@ workflows:
           requires: [vpc-infra-deploy, ecr-repo-deploy]
       - image-check:
           requires: [aws-ecr/build-and-push-image]
-      - eks-infra-deploy:
+      - eks-deploy:
           requires: [image-check]
