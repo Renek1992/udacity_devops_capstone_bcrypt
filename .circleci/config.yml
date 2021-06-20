@@ -6,11 +6,31 @@ orbs:
   slack: circleci/slack@4.4.2
   aws-ecr: circleci/aws-ecr@7.0.0
 
-# # CircleCi commands
-# commands:
-#   ecr-destroy:
-#     description: destroy 
-#     steps:
+# CircleCi commands
+commands:
+  vpc-infra-destroy:
+    description: Destroy VPC infrastructure in case of deployment failure
+    steps:
+      - run:
+          name: Destroy vpc infra
+          when: on_fail
+          command: |
+            echo "Destroying vpc infra..."
+            aws cloudformation delete-stack --stack-name bcrypt-vpc-infra
+            echo "Vpc infra successfully destroyed. For error see build-stage output"
+
+
+  ecr-infra-destroy:
+    description: Destroy ECR infrastructe in case of deployment failure
+    steps:
+      - run:
+          name: Destroy ecr repo
+          when: on_fail
+          command: |
+            echo "Destroying vpc infra..."
+            aws cloudformation delete-stack --stack-name bcrypt-ecr-repo
+            echo "Ecr repo successfully destroyed. For error see build-stage output"
+
 
 # Circleci jobs
 jobs:
@@ -91,22 +111,29 @@ jobs:
           key: app-build
 
 
-  infrastructure-deploy:
+  vpc-infra-deploy:
     docker:
       - image: amazon/aws-cli
     steps:
       - checkout
-      # - run:
-      #     name: infrastructure handling for AWS VPC, subnets and networking
-      #     command: |
-      #       if aws cloudformation describe-stacks --stackname
+      - run:
+          name: infrastructure handling for AWS VPC, subnets and networking
+          command: |
+            chmod +x create_vpc_infra.sh
+            ./create_vpc_infra.sh
+      - vpc-infra-destroy
+
+  
+  ecr-repo-deploy:
+    docker:
+      - image: amazon/aws-cli
+    steps:
       - run:
           name: infrastructure handling for AWS ECR repository
           command: | 
             chmod +x create_ecr_infra.sh
             ./create_ecr_infra.sh
-              
-      
+      - ecr-infra-destroy
 
 
   image-check:
@@ -117,14 +144,7 @@ jobs:
       - run:
           name: ecr image check
           command: |
-            if aws ecr describe-images --repository-name udacity-capstone-bcrypt
-            then 
-              echo "docker image available in AWS ECR repository"
-              exit 0
-            else
-              echo "docker image missing in AWS ECR repository"
-              exit 1
-            fi
+            aws ecr describe-images --repository-name udacity-capstone-bcrypt
 
   
 # Circleci workflow
@@ -136,10 +156,12 @@ workflows:
           requires: [app-build]
       - vulnerability-check:
           requires: [app-build]
-      - infrastructure-deploy:
+      - vpc-infra-deploy:
+          requires: [lint-check, vulnerability-check]
+      - ecr-repo-deploy:
           requires: [lint-check, vulnerability-check]
       - aws-ecr/build-and-push-image:
           repo: udacity-capstone-bcrypt
-          requires: [infrastructure-deploy]
+          requires: [vpc-infra-deploy, ecr-repo-deploy]
       - image-check:
           requires: [aws-ecr/build-and-push-image]

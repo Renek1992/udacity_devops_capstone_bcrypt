@@ -1,97 +1,23 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Description: AWS ECR container registry for bcrypt app
-
-# Cloudformation template parameters
-Parameters:
-  VpcId:
-    Type: String
-    Default: vpc-08d24be67452b9059
-  VpcSecurityGroup:
-    Type: String
-    Default: sg-0919648e1182f02ea
-  SubnetIdUsEast1a:
-    Type: String
-    Default: subnet-0b3cfef019b63faeb
-  SubnetIdUsEast1b:
-    Type: String
-    Default: subnet-0a29e247ea638f563
-  SubnetIdUsEast1c:
-    Type: String
-    Default: subnet-052a6240bc7ab0ada
-  SubnetIdUsEast1d:
-    Type: String
-    Default: subnet-0dde90b60cf5ab8b9
-  KubernetesClusterName:
-    Type: String
-    Default: bycrypt-eks-cluster
-
-# Cloudformation template resources
-Resources:
-  EKSKubernetesCluster:
-    Type: AWS::EKS::Cluster
-    Properties:
-      Name: !Ref KubernetesClusterName
-      ResourcesVpcConfig:
-        SecurityGroupIds:
-          - !Ref VpcSecurityGroup
-        SubnetIds:
-          - !Ref SubnetIdUsEast1a
-          - !Ref SubnetIdUsEast1b
-          - !Ref SubnetIdUsEast1c
-          - !Ref SubnetIdUsEast1d
-      RoleArn: !GetAtt ClusterRole.Arn
-
-
-  EKSClusterIAMRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - eks.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
-        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
-
-Outputs:
-  KubernetesCluster:
-    Description: The Kubernetes Cluster Name
-    Value: !Ref KubernetesClusterName
-    Export:
-      Name: !Sub "${StackName}-Cluster"
-
-
-
-
-
-
-
-
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 metadata:
-  name: EKS-Demo-Cluster
-  region: ap-southeast-1
+  name: EKS-bcrypt-cluster
+  region: us-east-1
 
 vpc:
-  id: vpc-09ee0ce943b8c8d63
+  id: vpc-04fd177fb778820de
   cidr: "192.168.0.0/16"
   subnets:
     public:
-      ap-southeast-1a:
-        id: subnet-04257581011106487
-      ap-southeast-1b:
-        id: subnet-0684eb5ade0256973
+      us-east-1a:
+        id: subnet-0d1ac1232cf8e99b0
+      us-east-1b:
+        id: subnet-0462409ee9c771837
     private:
-      ap-southeast-1a:
-        id: subnet-083e6c24a30ae4ed2
-      ap-southeast-1b:
-        id: subnet-083e6c24a30ae4ed2
+      us-east-1a:
+        id: subnet-0c8442559985248c2
+      us-east-1b:
+        id: subnet-03e6153f027e7e904
 
 nodeGroups:
   - name: EKS-public-workers
