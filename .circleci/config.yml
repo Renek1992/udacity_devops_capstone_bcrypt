@@ -103,17 +103,10 @@ jobs:
       - run:
           name: infrastructure handling for AWS ECR repository
           command: | 
-            aws cloudformation describe-stacks --stack-name bcrypt-ecr-repo
-            if [ $? -eq 0 ];
-            then
-              echo "stack already exists"
-              exit 0
-            else
-              echo "stack needs to be created"
-              chmod +x create_ecr_infra.sh
-              ./create_ecr_infra.sh
-              exit 0
-            fi
+            chmod +x create_ecr_infra.sh
+            ./create_ecr_infra.sh
+              
+      
 
 
   image-check:
