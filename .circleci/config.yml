@@ -5,6 +5,7 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.4.2
   aws-ecr: circleci/aws-ecr@7.0.0
+  aws-cli: circleci/aws-cli@2.0.3
 
 # CircleCi commands
 commands:
@@ -138,10 +139,10 @@ jobs:
 
 
   image-check:
-    docker: 
-      - image: amazon/aws-cli
+    executor: aws-cli/default
     steps:
       - checkout
+      - aws-cli/setup
       - run:
           name: ecr image check
           command: |
